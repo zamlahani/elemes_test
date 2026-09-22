@@ -10,6 +10,7 @@ class HomeScreen extends StatelessWidget {
     'Popular': 'movie/popular',
     'Top Rated': 'movie/top_rated',
     'Upcoming': 'movie/upcoming',
+    'Now Playing': 'movie/now_playing',
   };
 
   @override
