@@ -7,8 +7,9 @@ import '../config/api_config.dart';
 import '../models/media_item.dart';
 
 class TmdbService {
-  Future<List<MediaItem>> fetchList(String endpoint) async {
-    final uri = Uri.parse('$tmdbBaseUrl/$endpoint?api_key=$tmdbApiKey');
+  Future<List<MediaItem>> fetchList(String endpoint, {Map<String, String>? params}) async {
+    final uri = Uri.parse('$tmdbBaseUrl/$endpoint')
+        .replace(queryParameters: {'api_key': tmdbApiKey, ...?params});
     final response = await http.get(uri);
     if (response.statusCode != 200) {
       throw Exception('TMDB request failed (${response.statusCode})');

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/media_item.dart';
 import '../services/tmdb_service.dart';
 import 'detail_screen.dart';
+import 'search_screen.dart';
 import 'watchlist_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -28,21 +29,24 @@ class _HomeScreenState extends State<HomeScreen> {
       length: _tabs.length,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(_index == 0 ? 'Movies' : 'Watchlist'),
+          title: Text(const ['Movies', 'Search', 'Watchlist'][_index]),
           bottom: _index == 0
               ? TabBar(tabs: _tabs.keys.map((t) => Tab(text: t)).toList())
               : null,
         ),
-        body: _index == 0
-            ? TabBarView(
-                children: _tabs.values.map((endpoint) => _MovieList(endpoint: endpoint)).toList(),
-              )
-            : const WatchlistScreen(),
+        body: switch (_index) {
+          0 => TabBarView(
+              children: _tabs.values.map((endpoint) => _MovieList(endpoint: endpoint)).toList(),
+            ),
+          1 => const SearchScreen(),
+          _ => const WatchlistScreen(),
+        },
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: _index,
           onTap: (i) => setState(() => _index = i),
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.movie), label: 'Movies'),
+            BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
             BottomNavigationBarItem(icon: Icon(Icons.bookmark), label: 'Watchlist'),
           ],
         ),
