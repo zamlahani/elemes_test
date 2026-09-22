@@ -64,36 +64,71 @@ class _MovieList extends StatefulWidget {
 }
 
 class _MovieListState extends State<_MovieList> {
-  late final Future<List<MediaItem>> _movies = TmdbService().fetchList(widget.endpoint);
+  static const _prefetchThreshold = 5;
+
+  final List<MediaItem> _movies = [];
+  int _page = 1;
+  bool _hasMore = true;
+  bool _loading = false;
+  Object? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMore();
+  }
+
+  Future<void> _loadMore() async {
+    setState(() => _loading = true);
+    try {
+      final (movies, hasMore) = await TmdbService().fetchList(widget.endpoint, page: _page);
+      if (!mounted) return;
+      setState(() {
+        _movies.addAll(movies);
+        _hasMore = hasMore;
+        _page++;
+        _loading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e;
+        _loading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<MediaItem>>(
-      future: _movies,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+    if (_movies.isEmpty && _loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_movies.isEmpty && _error != null) {
+      return Center(child: Text('Error: $_error'));
+    }
+    return ListView.builder(
+      itemCount: _movies.length + (_hasMore ? 1 : 0),
+      itemBuilder: (context, i) {
+        if (i >= _movies.length) {
+          return const Padding(
+            padding: EdgeInsets.all(16),
+            child: Center(child: CircularProgressIndicator()),
+          );
         }
-        if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
+        if (_hasMore && !_loading && i == _movies.length - _prefetchThreshold) {
+          WidgetsBinding.instance.addPostFrameCallback((_) => _loadMore());
         }
-        final movies = snapshot.data!;
-        return ListView.builder(
-          itemCount: movies.length,
-          itemBuilder: (context, i) {
-            final movie = movies[i];
-            return ListTile(
-              leading: movie.posterPath == null
-                  ? const Icon(Icons.movie)
-                  : Image.network(TmdbService.posterUrl(movie.posterPath), width: 48, fit: BoxFit.cover),
-              title: Text(movie.title),
-              subtitle: Text(movie.overview, maxLines: 2, overflow: TextOverflow.ellipsis),
-              trailing: Text(movie.voteAverage.toStringAsFixed(1)),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => DetailScreen(movie: movie)),
-              ),
-            );
-          },
+        final movie = _movies[i];
+        return ListTile(
+          leading: movie.posterPath == null
+              ? const Icon(Icons.movie)
+              : Image.network(TmdbService.posterUrl(movie.posterPath), width: 48, fit: BoxFit.cover),
+          title: Text(movie.title),
+          subtitle: Text(movie.overview, maxLines: 2, overflow: TextOverflow.ellipsis),
+          trailing: Text(movie.voteAverage.toStringAsFixed(1)),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => DetailScreen(movie: movie)),
+          ),
         );
       },
     );

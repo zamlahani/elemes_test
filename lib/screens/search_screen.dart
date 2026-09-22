@@ -15,10 +15,18 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
+  static const _prefetchThreshold = 5;
+
   final _controller = TextEditingController();
   Timer? _debounce;
-  Future<List<MediaItem>>? _results;
   List<String> _recent = [];
+
+  String? _query;
+  final List<MediaItem> _movies = [];
+  int _page = 1;
+  bool _hasMore = true;
+  bool _loading = false;
+  Object? _error;
 
   @override
   void initState() {
@@ -31,7 +39,7 @@ class _SearchScreenState extends State<SearchScreen> {
   void _onChanged(String query) {
     _debounce?.cancel();
     if (query.trim().isEmpty) {
-      setState(() => _results = null);
+      setState(() => _query = null);
       return;
     }
     _debounce = Timer(const Duration(milliseconds: 500), () => _runSearch(query));
@@ -46,8 +54,35 @@ class _SearchScreenState extends State<SearchScreen> {
     if (!mounted) return;
     setState(() {
       _recent = recent;
-      _results = TmdbService().fetchList('search/movie', params: {'query': query});
+      _query = query;
+      _movies.clear();
+      _page = 1;
+      _hasMore = true;
+      _error = null;
     });
+    _loadMore();
+  }
+
+  Future<void> _loadMore() async {
+    final query = _query;
+    if (query == null) return;
+    setState(() => _loading = true);
+    try {
+      final (movies, hasMore) = await TmdbService().fetchList('search/movie', page: _page, params: {'query': query});
+      if (!mounted || query != _query) return;
+      setState(() {
+        _movies.addAll(movies);
+        _hasMore = hasMore;
+        _page++;
+        _loading = false;
+      });
+    } catch (e) {
+      if (!mounted || query != _query) return;
+      setState(() {
+        _error = e;
+        _loading = false;
+      });
+    }
   }
 
   @override
@@ -69,58 +104,65 @@ class _SearchScreenState extends State<SearchScreen> {
             onChanged: _onChanged,
           ),
         ),
-        Expanded(
-          child: _results == null
-              ? _recent.isEmpty
-                  ? const Center(child: Text('Type to search movies'))
-                  : ListView(
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.all(8),
-                          child: Text('Recent searches', style: TextStyle(fontWeight: FontWeight.bold)),
-                        ),
-                        for (final query in _recent)
-                          ListTile(
-                            leading: const Icon(Icons.history),
-                            title: Text(query),
-                            onTap: () => _runSearch(query),
-                          ),
-                      ],
-                    )
-              : FutureBuilder<List<MediaItem>>(
-                  future: _results,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                    if (snapshot.hasError) {
-                      return Center(child: Text('Error: ${snapshot.error}'));
-                    }
-                    final movies = snapshot.data!;
-                    if (movies.isEmpty) {
-                      return const Center(child: Text('No results'));
-                    }
-                    return ListView.builder(
-                      itemCount: movies.length,
-                      itemBuilder: (context, i) {
-                        final movie = movies[i];
-                        return ListTile(
-                          leading: movie.posterPath == null
-                              ? const Icon(Icons.movie)
-                              : Image.network(TmdbService.posterUrl(movie.posterPath), width: 48, fit: BoxFit.cover),
-                          title: Text(movie.title),
-                          subtitle: Text(movie.overview, maxLines: 2, overflow: TextOverflow.ellipsis),
-                          trailing: Text(movie.voteAverage.toStringAsFixed(1)),
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => DetailScreen(movie: movie)),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                ),
-        ),
+        Expanded(child: _buildResults()),
       ],
+    );
+  }
+
+  Widget _buildResults() {
+    if (_query == null) {
+      if (_recent.isEmpty) {
+        return const Center(child: Text('Type to search movies'));
+      }
+      return ListView(
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(8),
+            child: Text('Recent searches', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+          for (final query in _recent)
+            ListTile(
+              leading: const Icon(Icons.history),
+              title: Text(query),
+              onTap: () => _runSearch(query),
+            ),
+        ],
+      );
+    }
+    if (_movies.isEmpty && _loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_movies.isEmpty && _error != null) {
+      return Center(child: Text('Error: $_error'));
+    }
+    if (_movies.isEmpty) {
+      return const Center(child: Text('No results'));
+    }
+    return ListView.builder(
+      itemCount: _movies.length + (_hasMore ? 1 : 0),
+      itemBuilder: (context, i) {
+        if (i >= _movies.length) {
+          return const Padding(
+            padding: EdgeInsets.all(16),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+        if (_hasMore && !_loading && i == _movies.length - _prefetchThreshold) {
+          WidgetsBinding.instance.addPostFrameCallback((_) => _loadMore());
+        }
+        final movie = _movies[i];
+        return ListTile(
+          leading: movie.posterPath == null
+              ? const Icon(Icons.movie)
+              : Image.network(TmdbService.posterUrl(movie.posterPath), width: 48, fit: BoxFit.cover),
+          title: Text(movie.title),
+          subtitle: Text(movie.overview, maxLines: 2, overflow: TextOverflow.ellipsis),
+          trailing: Text(movie.voteAverage.toStringAsFixed(1)),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => DetailScreen(movie: movie)),
+          ),
+        );
+      },
     );
   }
 }
