@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+// import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import '../config/api_config.dart';
@@ -13,9 +14,9 @@ class TmdbService {
       throw Exception('TMDB request failed (${response.statusCode})');
     }
     final results = jsonDecode(response.body)['results'] as List;
+    // debugPrint(const JsonEncoder.withIndent('  ').convert(results));
     return results.map((e) => MediaItem.fromJson(e)).toList();
   }
 
-  static String posterUrl(String? path) =>
-      path == null ? '' : '$tmdbImageBaseUrl$path';
+  static String posterUrl(String? path) => path == null ? '' : '$tmdbImageBaseUrl$path';
 }

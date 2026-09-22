@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/media_item.dart';
 import '../services/tmdb_service.dart';
+import 'detail_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -64,6 +65,9 @@ class _MovieListState extends State<_MovieList> {
               title: Text(movie.title),
               subtitle: Text(movie.overview, maxLines: 2, overflow: TextOverflow.ellipsis),
               trailing: Text(movie.voteAverage.toStringAsFixed(1)),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => DetailScreen(movie: movie)),
+              ),
             );
           },
         );
