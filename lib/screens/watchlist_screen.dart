@@ -21,7 +21,9 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
     _movies = WatchlistService.getAll();
   }
 
-  void _reload() => setState(() { _movies = WatchlistService.getAll(); });
+  void _reload() => setState(() {
+        _movies = WatchlistService.getAll();
+      });
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +37,9 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
         if (movies.isEmpty) {
           return const Center(child: Text('No movies in watchlist yet'));
         }
-        return ListView.builder(
+        return GridView.builder(
+          padding: const EdgeInsets.all(8),
+          gridDelegate: movieGridDelegate,
           itemCount: movies.length,
           itemBuilder: (context, i) {
             final movie = movies[i];

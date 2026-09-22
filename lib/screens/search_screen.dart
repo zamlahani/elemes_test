@@ -140,14 +140,13 @@ class _SearchScreenState extends State<SearchScreen> {
     if (_movies.isEmpty) {
       return const Center(child: Text('No results'));
     }
-    return ListView.builder(
+    return GridView.builder(
+      padding: const EdgeInsets.all(8),
+      gridDelegate: movieGridDelegate,
       itemCount: _movies.length + (_hasMore ? 1 : 0),
       itemBuilder: (context, i) {
         if (i >= _movies.length) {
-          return const Padding(
-            padding: EdgeInsets.all(16),
-            child: Center(child: CircularProgressIndicator()),
-          );
+          return const Center(child: CircularProgressIndicator());
         }
         if (_hasMore && !_loading && i == _movies.length - _prefetchThreshold) {
           WidgetsBinding.instance.addPostFrameCallback((_) => _loadMore());
