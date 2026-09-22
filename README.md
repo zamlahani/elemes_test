@@ -1,16 +1,36 @@
-# elemes_test
+# Movies Catalog
 
-A new Flutter project.
+A Flutter app for browsing movies
 
-## Getting Started
+## Setup
 
-This project is a starting point for a Flutter application.
+1. `flutter pub get`
+2. `flutter run`
 
-A few resources to get you started if this is your first Flutter project:
+## Build APK
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+```
+flutter build apk --release
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Output: `build/app/outputs/flutter-apk/app-release.apk`
+
+## Features
+
+- **Splash screen** on launch
+- **Popular / Top Rated / Upcoming / Now Playing** movie lists, with infinite scroll
+- **Search** movies, with debounced input, recent search history, and infinite scroll
+- **Watchlist**: add/remove movies from the detail screen
+- Loading states and retry-able error states throughout
+- Bottom navigation: Movies / Search / Watchlist
+
+## Structure
+
+```
+lib/
+  config/       TMDB API key & base URLs
+  models/       MediaItem (movie data)
+  services/     TMDB API client, watchlist & recent-search persistence
+  screens/      Splash, Home (movie tabs), Search, Watchlist, Detail
+  widgets/      Reusable list tile & error view
+```
