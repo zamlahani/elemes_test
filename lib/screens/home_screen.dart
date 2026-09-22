@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/media_item.dart';
 import '../services/tmdb_service.dart';
+import '../widgets/error_view.dart';
 import 'detail_screen.dart';
 import 'search_screen.dart';
 import 'watchlist_screen.dart';
@@ -104,7 +105,7 @@ class _MovieListState extends State<_MovieList> {
       return const Center(child: CircularProgressIndicator());
     }
     if (_movies.isEmpty && _error != null) {
-      return Center(child: Text('Error: $_error'));
+      return ErrorView(onRetry: _loadMore);
     }
     return ListView.builder(
       itemCount: _movies.length + (_hasMore ? 1 : 0),

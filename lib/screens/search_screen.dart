@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../models/media_item.dart';
 import '../services/recent_search_service.dart';
 import '../services/tmdb_service.dart';
+import '../widgets/error_view.dart';
 import 'detail_screen.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -133,7 +134,7 @@ class _SearchScreenState extends State<SearchScreen> {
       return const Center(child: CircularProgressIndicator());
     }
     if (_movies.isEmpty && _error != null) {
-      return Center(child: Text('Error: $_error'));
+      return ErrorView(onRetry: _loadMore);
     }
     if (_movies.isEmpty) {
       return const Center(child: Text('No results'));
