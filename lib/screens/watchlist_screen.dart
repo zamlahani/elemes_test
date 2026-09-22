@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../models/media_item.dart';
-import '../services/tmdb_service.dart';
 import '../services/watchlist_service.dart';
+import '../widgets/movie_list_tile.dart';
 import 'detail_screen.dart';
 
 class WatchlistScreen extends StatefulWidget {
@@ -39,13 +39,8 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
           itemCount: movies.length,
           itemBuilder: (context, i) {
             final movie = movies[i];
-            return ListTile(
-              leading: movie.posterPath == null
-                  ? const Icon(Icons.movie)
-                  : Image.network(TmdbService.posterUrl(movie.posterPath), width: 48, fit: BoxFit.cover),
-              title: Text(movie.title),
-              subtitle: Text(movie.overview, maxLines: 2, overflow: TextOverflow.ellipsis),
-              trailing: Text(movie.voteAverage.toStringAsFixed(1)),
+            return MovieListTile(
+              movie: movie,
               onTap: () async {
                 await Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => DetailScreen(movie: movie)),

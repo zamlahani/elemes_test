@@ -6,6 +6,7 @@ import '../models/media_item.dart';
 import '../services/recent_search_service.dart';
 import '../services/tmdb_service.dart';
 import '../widgets/error_view.dart';
+import '../widgets/movie_list_tile.dart';
 import 'detail_screen.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -152,13 +153,8 @@ class _SearchScreenState extends State<SearchScreen> {
           WidgetsBinding.instance.addPostFrameCallback((_) => _loadMore());
         }
         final movie = _movies[i];
-        return ListTile(
-          leading: movie.posterPath == null
-              ? const Icon(Icons.movie)
-              : Image.network(TmdbService.posterUrl(movie.posterPath), width: 48, fit: BoxFit.cover),
-          title: Text(movie.title),
-          subtitle: Text(movie.overview, maxLines: 2, overflow: TextOverflow.ellipsis),
-          trailing: Text(movie.voteAverage.toStringAsFixed(1)),
+        return MovieListTile(
+          movie: movie,
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => DetailScreen(movie: movie)),
           ),
