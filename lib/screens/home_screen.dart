@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/media_item.dart';
 import '../services/tmdb_service.dart';
 import '../widgets/error_view.dart';
+import '../widgets/movie_category_tabs.dart';
 import '../widgets/movie_list_tile.dart';
 import 'detail_screen.dart';
 import 'search_screen.dart';
@@ -33,7 +34,10 @@ class _HomeScreenState extends State<HomeScreen> {
         appBar: AppBar(
           title: Text(const ['Movies', 'Search', 'Watchlist'][_index]),
           bottom: _index == 0
-              ? TabBar(tabs: _tabs.keys.map((t) => Tab(text: t)).toList())
+              ? PreferredSize(
+                  preferredSize: const Size.fromHeight(kToolbarHeight),
+                  child: MovieCategoryTabs(labels: _tabs.keys.toList()),
+                )
               : null,
         ),
         body: switch (_index) {
