@@ -22,4 +22,12 @@ class MediaItem {
       voteAverage: (json['vote_average'] as num?)?.toDouble() ?? 0.0,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'title': title,
+        'poster_path': posterPath,
+        'overview': overview,
+        'vote_average': voteAverage,
+      };
 }

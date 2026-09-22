@@ -3,9 +3,17 @@ import 'package:flutter/material.dart';
 import '../models/media_item.dart';
 import '../services/tmdb_service.dart';
 import 'detail_screen.dart';
+import 'watchlist_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int _index = 0;
 
   static const _tabs = {
     'Popular': 'movie/popular',
@@ -20,11 +28,23 @@ class HomeScreen extends StatelessWidget {
       length: _tabs.length,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Movies'),
-          bottom: TabBar(tabs: _tabs.keys.map((t) => Tab(text: t)).toList()),
+          title: Text(_index == 0 ? 'Movies' : 'Watchlist'),
+          bottom: _index == 0
+              ? TabBar(tabs: _tabs.keys.map((t) => Tab(text: t)).toList())
+              : null,
         ),
-        body: TabBarView(
-          children: _tabs.values.map((endpoint) => _MovieList(endpoint: endpoint)).toList(),
+        body: _index == 0
+            ? TabBarView(
+                children: _tabs.values.map((endpoint) => _MovieList(endpoint: endpoint)).toList(),
+              )
+            : const WatchlistScreen(),
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _index,
+          onTap: (i) => setState(() => _index = i),
+          items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.movie), label: 'Movies'),
+            BottomNavigationBarItem(icon: Icon(Icons.bookmark), label: 'Watchlist'),
+          ],
         ),
       ),
     );
