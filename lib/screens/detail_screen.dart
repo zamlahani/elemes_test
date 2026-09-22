@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../models/media_item.dart';
@@ -29,29 +30,53 @@ class _DetailScreenState extends State<DetailScreen> {
   @override
   Widget build(BuildContext context) {
     final movie = widget.movie;
+    final backdrop = movie.backdropPath ?? movie.posterPath;
     return Scaffold(
-      appBar: AppBar(
-        title: Text(movie.title),
-        actions: [
-          IconButton(
-            icon: Icon(_saved ? Icons.bookmark : Icons.bookmark_border),
-            onPressed: _toggleWatchlist,
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 220,
+            pinned: true,
+            flexibleSpace: FlexibleSpaceBar(
+              title: Text(movie.title, style: const TextStyle(shadows: [Shadow(blurRadius: 8)])),
+              background: backdrop == null
+                  ? Container(color: Theme.of(context).colorScheme.surfaceContainerHighest)
+                  : CachedNetworkImage(imageUrl: TmdbService.posterUrl(backdrop), fit: BoxFit.cover),
+            ),
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.all(16),
+            sliver: SliverList.list(
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.star, color: Colors.amber, size: 20),
+                    const SizedBox(width: 4),
+                    Text(
+                      movie.voteAverage.toStringAsFixed(1),
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                FilledButton.icon(
+                  onPressed: _toggleWatchlist,
+                  icon: Icon(_saved ? Icons.bookmark : Icons.bookmark_border),
+                  label: Text(_saved ? 'Remove from Watchlist' : 'Add to Watchlist'),
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                    backgroundColor: _saved ? Theme.of(context).colorScheme.error : null,
+                    foregroundColor: _saved ? Theme.of(context).colorScheme.onError : null,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Text('Overview', style: Theme.of(context).textTheme.titleLarge),
+                const SizedBox(height: 8),
+                Text(movie.overview, style: Theme.of(context).textTheme.bodyMedium),
+              ],
+            ),
           ),
         ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (movie.posterPath != null)
-              Center(child: Image.network(TmdbService.posterUrl(movie.posterPath), height: 300)),
-            const SizedBox(height: 16),
-            Text('Rating: ${movie.voteAverage.toStringAsFixed(1)}'),
-            const SizedBox(height: 8),
-            Text(movie.overview),
-          ],
-        ),
       ),
     );
   }

@@ -2,6 +2,7 @@ class MediaItem {
   final int id;
   final String title;
   final String? posterPath;
+  final String? backdropPath;
   final String overview;
   final double voteAverage;
 
@@ -9,6 +10,7 @@ class MediaItem {
     required this.id,
     required this.title,
     required this.posterPath,
+    required this.backdropPath,
     required this.overview,
     required this.voteAverage,
   });
@@ -18,6 +20,7 @@ class MediaItem {
       id: json['id'] as int,
       title: json['title'] as String? ?? '',
       posterPath: json['poster_path'] as String?,
+      backdropPath: json['backdrop_path'] as String?,
       overview: json['overview'] as String? ?? '',
       voteAverage: (json['vote_average'] as num?)?.toDouble() ?? 0.0,
     );
@@ -27,6 +30,7 @@ class MediaItem {
         'id': id,
         'title': title,
         'poster_path': posterPath,
+        'backdrop_path': backdropPath,
         'overview': overview,
         'vote_average': voteAverage,
       };
