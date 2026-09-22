@@ -6,7 +6,11 @@ import '../services/tmdb_service.dart';
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  static const _tabs = {'Popular': 'movie/popular', 'Top Rated': 'movie/top_rated'};
+  static const _tabs = {
+    'Popular': 'movie/popular',
+    'Top Rated': 'movie/top_rated',
+    'Upcoming': 'movie/upcoming',
+  };
 
   @override
   Widget build(BuildContext context) {
