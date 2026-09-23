@@ -9,8 +9,23 @@ import '../widgets/error_view.dart';
 import '../widgets/movie_list_tile.dart';
 import 'detail_screen.dart';
 
+const _filterEndpoints = {
+  null: 'search/multi',
+  MediaType.movie: 'search/movie',
+  MediaType.tv: 'search/tv',
+  MediaType.person: 'search/person',
+};
+
+const _filterLabels = {
+  null: 'All',
+  MediaType.movie: 'Movies',
+  MediaType.tv: 'TV',
+  MediaType.person: 'People',
+};
+
 class SearchScreen extends StatefulWidget {
-  const SearchScreen({super.key});
+  final MediaType? initialType;
+  const SearchScreen({super.key, this.initialType});
 
   @override
   State<SearchScreen> createState() => _SearchScreenState();
@@ -23,6 +38,7 @@ class _SearchScreenState extends State<SearchScreen> {
   Timer? _debounce;
   List<String> _recent = [];
 
+  MediaType? _filter;
   String? _query;
   final List<MediaItem> _movies = [];
   int _page = 1;
@@ -33,6 +49,7 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   void initState() {
     super.initState();
+    _filter = widget.initialType;
     RecentSearchService.getAll().then((v) {
       if (mounted) setState(() => _recent = v);
     });
@@ -45,6 +62,12 @@ class _SearchScreenState extends State<SearchScreen> {
       return;
     }
     _debounce = Timer(const Duration(milliseconds: 500), () => _runSearch(query));
+  }
+
+  void _onFilterChanged(MediaType? filter) {
+    setState(() => _filter = filter);
+    final query = _query;
+    if (query != null) _runSearch(query);
   }
 
   Future<void> _runSearch(String query) async {
@@ -68,9 +91,10 @@ class _SearchScreenState extends State<SearchScreen> {
   Future<void> _loadMore() async {
     final query = _query;
     if (query == null) return;
+    final endpoint = _filterEndpoints[_filter]!;
     setState(() => _loading = true);
     try {
-      final (movies, hasMore) = await TmdbService().fetchList('search/movie', page: _page, params: {'query': query});
+      final (movies, hasMore) = await TmdbService().fetchList(endpoint, page: _page, params: {'query': query});
       if (!mounted || query != _query) return;
       setState(() {
         _movies.addAll(movies);
@@ -96,25 +120,43 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8),
-          child: TextField(
-            controller: _controller,
-            decoration: const InputDecoration(hintText: 'Search movies...', prefixIcon: Icon(Icons.search)),
-            onChanged: _onChanged,
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        title: TextField(
+          controller: _controller,
+          autofocus: true,
+          decoration: const InputDecoration(hintText: 'Search...', border: InputBorder.none),
+          onChanged: _onChanged,
         ),
-        Expanded(child: _buildResults()),
-      ],
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: Row(
+              children: [
+                for (final filter in _filterLabels.keys)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ChoiceChip(
+                      label: Text(_filterLabels[filter]!),
+                      selected: _filter == filter,
+                      onSelected: (_) => _onFilterChanged(filter),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          Expanded(child: _buildResults()),
+        ],
+      ),
     );
   }
 
   Widget _buildResults() {
     if (_query == null) {
       if (_recent.isEmpty) {
-        return const Center(child: Text('Type to search movies'));
+        return const Center(child: Text('Type to search'));
       }
       return ListView(
         children: [

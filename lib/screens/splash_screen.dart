@@ -43,10 +43,10 @@ class _SplashScreenState extends State<SplashScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.movie, size: 64, color: colorScheme.onPrimary),
+              Icon(Icons.local_movies, size: 64, color: colorScheme.onPrimary),
               const SizedBox(height: 12),
               Text(
-                'Movie Catalog',
+                'Media Catalog',
                 style: TextStyle(fontSize: 20, color: colorScheme.onPrimary, fontWeight: FontWeight.bold),
               ),
             ],

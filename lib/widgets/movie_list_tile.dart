@@ -59,23 +59,40 @@ class MovieListTile extends StatelessWidget {
             ),
             Positioned(
               top: 4,
-              right: 4,
+              left: 4,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(color: Colors.black87, borderRadius: BorderRadius.circular(4)),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.star, color: Colors.amber, size: 12),
-                    const SizedBox(width: 2),
-                    Text(
-                      movie.voteAverage.toStringAsFixed(1),
-                      style: const TextStyle(color: Colors.white, fontSize: 11),
-                    ),
-                  ],
+                child: Text(
+                  switch (movie.mediaType) {
+                    MediaType.movie => 'Movie',
+                    MediaType.tv => 'TV',
+                    MediaType.person => 'Person',
+                  },
+                  style: const TextStyle(color: Colors.white, fontSize: 10),
                 ),
               ),
             ),
+            if (movie.mediaType != MediaType.person)
+              Positioned(
+                top: 4,
+                right: 4,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(color: Colors.black87, borderRadius: BorderRadius.circular(4)),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.star, color: Colors.amber, size: 12),
+                      const SizedBox(width: 2),
+                      Text(
+                        movie.voteAverage.toStringAsFixed(1),
+                        style: const TextStyle(color: Colors.white, fontSize: 11),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
           ],
         ),
       ),

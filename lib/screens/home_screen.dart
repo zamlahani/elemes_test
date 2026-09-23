@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/media_item.dart';
-import '../services/tmdb_service.dart';
-import '../widgets/error_view.dart';
-import '../widgets/movie_category_tabs.dart';
-import '../widgets/movie_list_tile.dart';
-import 'detail_screen.dart';
+import 'category_screen.dart';
 import 'search_screen.dart';
 import 'watchlist_screen.dart';
 
@@ -19,118 +15,69 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _index = 0;
 
-  static const _tabs = {
+  static const _movieTabs = {
     'Popular': 'movie/popular',
     'Top Rated': 'movie/top_rated',
     'Upcoming': 'movie/upcoming',
     'Now Playing': 'movie/now_playing',
   };
 
-  @override
-  Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: _tabs.length,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(const ['Movies', 'Search', 'Watchlist'][_index]),
-          bottom: _index == 0
-              ? PreferredSize(
-                  preferredSize: const Size.fromHeight(kToolbarHeight),
-                  child: MovieCategoryTabs(labels: _tabs.keys.toList()),
-                )
-              : null,
-        ),
-        body: switch (_index) {
-          0 => TabBarView(
-              children: _tabs.values.map((endpoint) => _MovieList(endpoint: endpoint)).toList(),
-            ),
-          1 => const SearchScreen(),
-          _ => const WatchlistScreen(),
-        },
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _index,
-          onTap: (i) => setState(() => _index = i),
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.movie), label: 'Movies'),
-            BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-            BottomNavigationBarItem(icon: Icon(Icons.bookmark), label: 'Watchlist'),
-          ],
-        ),
-      ),
-    );
-  }
-}
+  static const _tvTabs = {
+    'Popular': 'tv/popular',
+    'Top Rated': 'tv/top_rated',
+    'On The Air': 'tv/on_the_air',
+    'Airing Today': 'tv/airing_today',
+  };
 
-class _MovieList extends StatefulWidget {
-  final String endpoint;
-  const _MovieList({required this.endpoint});
-
-  @override
-  State<_MovieList> createState() => _MovieListState();
-}
-
-class _MovieListState extends State<_MovieList> {
-  static const _prefetchThreshold = 5;
-
-  final List<MediaItem> _movies = [];
-  int _page = 1;
-  bool _hasMore = true;
-  bool _loading = false;
-  Object? _error;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadMore();
-  }
-
-  Future<void> _loadMore() async {
-    setState(() => _loading = true);
-    try {
-      final (movies, hasMore) = await TmdbService().fetchList(widget.endpoint, page: _page);
-      if (!mounted) return;
-      setState(() {
-        _movies.addAll(movies);
-        _hasMore = hasMore;
-        _page++;
-        _loading = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _error = e;
-        _loading = false;
-      });
-    }
-  }
+  static const _sectionTypes = [MediaType.movie, MediaType.tv, MediaType.person];
 
   @override
   Widget build(BuildContext context) {
-    if (_movies.isEmpty && _loading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    if (_movies.isEmpty && _error != null) {
-      return ErrorView(onRetry: _loadMore);
-    }
-    return GridView.builder(
-      padding: const EdgeInsets.all(8),
-      gridDelegate: movieGridDelegate,
-      itemCount: _movies.length + (_hasMore ? 1 : 0),
-      itemBuilder: (context, i) {
-        if (i >= _movies.length) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (_hasMore && !_loading && i == _movies.length - _prefetchThreshold) {
-          WidgetsBinding.instance.addPostFrameCallback((_) => _loadMore());
-        }
-        final movie = _movies[i];
-        return MovieListTile(
-          movie: movie,
+    return Scaffold(
+      appBar: AppBar(
+        title: GestureDetector(
           onTap: () => Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => DetailScreen(movie: movie)),
+            MaterialPageRoute(builder: (_) => SearchScreen(initialType: _sectionTypes[_index])),
           ),
-        );
+          child: Container(
+            height: 40,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.search, size: 20),
+                const SizedBox(width: 8),
+                Text('Search...', style: Theme.of(context).textTheme.bodyMedium),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.bookmark),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const WatchlistScreen()),
+            ),
+          ),
+        ],
+      ),
+      body: switch (_index) {
+        0 => const CategoryScreen(key: ValueKey('movies'), tabs: _movieTabs),
+        1 => const CategoryScreen(key: ValueKey('tv'), tabs: _tvTabs),
+        _ => const CategoryScreen(key: ValueKey('people'), singleEndpoint: 'person/popular'),
       },
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _index,
+        onTap: (i) => setState(() => _index = i),
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.movie), label: 'Movies'),
+          BottomNavigationBarItem(icon: Icon(Icons.tv), label: 'TV Shows'),
+          BottomNavigationBarItem(icon: Icon(Icons.people), label: 'People'),
+        ],
+      ),
     );
   }
 }

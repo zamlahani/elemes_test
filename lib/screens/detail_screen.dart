@@ -19,7 +19,7 @@ class _DetailScreenState extends State<DetailScreen> {
   @override
   void initState() {
     super.initState();
-    WatchlistService.isSaved(widget.movie.id).then((v) => setState(() => _saved = v));
+    WatchlistService.isSaved(widget.movie).then((v) => setState(() => _saved = v));
   }
 
   Future<void> _toggleWatchlist() async {
@@ -48,16 +48,23 @@ class _DetailScreenState extends State<DetailScreen> {
             padding: const EdgeInsets.all(16),
             sliver: SliverList.list(
               children: [
-                Row(
-                  children: [
-                    const Icon(Icons.star, color: Colors.amber, size: 20),
-                    const SizedBox(width: 4),
-                    Text(
-                      movie.voteAverage.toStringAsFixed(1),
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                  ],
-                ),
+                if (movie.mediaType != MediaType.person)
+                  Row(
+                    children: [
+                      const Icon(Icons.star, color: Colors.amber, size: 20),
+                      const SizedBox(width: 4),
+                      Text(
+                        movie.voteAverage.toStringAsFixed(1),
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      if (movie.date != null) ...[
+                        const SizedBox(width: 16),
+                        Icon(Icons.calendar_today, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                        const SizedBox(width: 4),
+                        Text(movie.date!, style: Theme.of(context).textTheme.bodyMedium),
+                      ],
+                    ],
+                  ),
                 const SizedBox(height: 16),
                 FilledButton.icon(
                   onPressed: _toggleWatchlist,
@@ -69,10 +76,12 @@ class _DetailScreenState extends State<DetailScreen> {
                     foregroundColor: _saved ? Theme.of(context).colorScheme.onError : null,
                   ),
                 ),
-                const SizedBox(height: 24),
-                Text('Overview', style: Theme.of(context).textTheme.titleLarge),
-                const SizedBox(height: 8),
-                Text(movie.overview, style: Theme.of(context).textTheme.bodyMedium),
+                if (movie.overview.isNotEmpty) ...[
+                  const SizedBox(height: 24),
+                  Text('Overview', style: Theme.of(context).textTheme.titleLarge),
+                  const SizedBox(height: 8),
+                  Text(movie.overview, style: Theme.of(context).textTheme.bodyMedium),
+                ],
               ],
             ),
           ),

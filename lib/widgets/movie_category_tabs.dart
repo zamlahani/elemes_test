@@ -12,35 +12,40 @@ class MovieCategoryTabs extends StatelessWidget {
       builder: (context, _) {
         return Container(
           color: Theme.of(context).colorScheme.surface,
-          padding: const EdgeInsets.symmetric(horizontal: 8),
           height: kToolbarHeight,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              for (var i = 0; i < labels.length; i++)
-                GestureDetector(
-                  onTap: () => controller.animateTo(i),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        labels[i],
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: controller.index == i ? FontWeight.bold : FontWeight.normal,
-                          color: controller.index == i ? Theme.of(context).colorScheme.primary : null,
-                        ),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Row(
+              children: [
+                for (var i = 0; i < labels.length; i++)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: GestureDetector(
+                      onTap: () => controller.animateTo(i),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            labels[i],
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: controller.index == i ? FontWeight.bold : FontWeight.normal,
+                              color: controller.index == i ? Theme.of(context).colorScheme.primary : null,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Container(
+                            height: 2,
+                            width: 24,
+                            color: controller.index == i ? Theme.of(context).colorScheme.primary : Colors.transparent,
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 4),
-                      Container(
-                        height: 2,
-                        width: 24,
-                        color: controller.index == i ? Theme.of(context).colorScheme.primary : Colors.transparent,
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         );
       },

@@ -21,7 +21,14 @@ class TmdbService {
     final json = jsonDecode(response.body);
     final results = json['results'] as List;
     final totalPages = json['total_pages'] as int? ?? page;
-    return (results.map((e) => MediaItem.fromJson(e)).toList(), page < totalPages);
+    final mediaType = _typeFromEndpoint(endpoint);
+    return (results.map((e) => MediaItem.fromJson(e, mediaType: mediaType)).toList(), page < totalPages);
+  }
+
+  static MediaType _typeFromEndpoint(String endpoint) {
+    if (endpoint.contains('tv')) return MediaType.tv;
+    if (endpoint.contains('person')) return MediaType.person;
+    return MediaType.movie;
   }
 
   static String posterUrl(String? path) => path == null ? '' : '$tmdbImageBaseUrl$path';
