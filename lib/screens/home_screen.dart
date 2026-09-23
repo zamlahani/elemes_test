@@ -64,11 +64,14 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: switch (_index) {
-        0 => const CategoryScreen(key: ValueKey('movies'), tabs: _movieTabs),
-        1 => const CategoryScreen(key: ValueKey('tv'), tabs: _tvTabs),
-        _ => const CategoryScreen(key: ValueKey('people'), singleEndpoint: 'person/popular'),
-      },
+      body: IndexedStack(
+        index: _index,
+        children: const [
+          CategoryScreen(tabs: _movieTabs),
+          CategoryScreen(tabs: _tvTabs),
+          CategoryScreen(singleEndpoint: 'person/popular'),
+        ],
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _index,
         onTap: (i) => setState(() => _index = i),

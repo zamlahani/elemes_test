@@ -42,7 +42,7 @@ class _CategoryList extends StatefulWidget {
   State<_CategoryList> createState() => _CategoryListState();
 }
 
-class _CategoryListState extends State<_CategoryList> {
+class _CategoryListState extends State<_CategoryList> with AutomaticKeepAliveClientMixin {
   static const _prefetchThreshold = 5;
 
   final List<MediaItem> _items = [];
@@ -52,9 +52,22 @@ class _CategoryListState extends State<_CategoryList> {
   Object? _error;
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   void initState() {
     super.initState();
     _loadMore();
+  }
+
+  Future<void> _refresh() async {
+    setState(() {
+      _items.clear();
+      _page = 1;
+      _hasMore = true;
+      _error = null;
+    });
+    await _loadMore();
   }
 
   Future<void> _loadMore() async {
@@ -79,31 +92,35 @@ class _CategoryListState extends State<_CategoryList> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     if (_items.isEmpty && _loading) {
       return const Center(child: CircularProgressIndicator());
     }
     if (_items.isEmpty && _error != null) {
       return ErrorView(onRetry: _loadMore);
     }
-    return GridView.builder(
-      padding: const EdgeInsets.all(8),
-      gridDelegate: movieGridDelegate,
-      itemCount: _items.length + (_hasMore ? 1 : 0),
-      itemBuilder: (context, i) {
-        if (i >= _items.length) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (_hasMore && !_loading && i == _items.length - _prefetchThreshold) {
-          WidgetsBinding.instance.addPostFrameCallback((_) => _loadMore());
-        }
-        final item = _items[i];
-        return MovieListTile(
-          movie: item,
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => DetailScreen(movie: item)),
-          ),
-        );
-      },
+    return RefreshIndicator(
+      onRefresh: _refresh,
+      child: GridView.builder(
+        padding: const EdgeInsets.all(8),
+        gridDelegate: movieGridDelegate,
+        itemCount: _items.length + (_hasMore ? 1 : 0),
+        itemBuilder: (context, i) {
+          if (i >= _items.length) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (_hasMore && !_loading && i == _items.length - _prefetchThreshold) {
+            WidgetsBinding.instance.addPostFrameCallback((_) => _loadMore());
+          }
+          final item = _items[i];
+          return MovieListTile(
+            movie: item,
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => DetailScreen(movie: item)),
+            ),
+          );
+        },
+      ),
     );
   }
 }
