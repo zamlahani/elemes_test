@@ -1,11 +1,11 @@
 {
-    "name": "elemes_test",
-    "short_name": "elemes_test",
+    "name": "Media Catalog",
+    "short_name": "Media Catalog",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Browse movies, TV shows, and people.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
